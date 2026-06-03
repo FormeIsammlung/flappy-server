@@ -21,6 +21,7 @@ function broadcastExcept(room, data, excludeWs) {
 wss.on('connection', (ws) => {
   ws.roomCode = null; ws.playerIndex = -1;
   ws.profile = { name: 'Spieler', avatar: null };
+  ws.isReady = false;
 
   ws.on('message', (raw) => {
     let msg; try { msg = JSON.parse(raw); } catch(e) { return; }
@@ -28,8 +29,8 @@ wss.on('connection', (ws) => {
       case 'create': {
         const code = generateCode();
         ws.profile = { name: msg.name || 'Spieler 1', avatar: msg.avatar || null };
-        rooms[code] = { players: [ws, null], seed: generateSeed() };
-        ws.roomCode = code; ws.playerIndex = 0;
+        rooms[code] = { players: [ws, null], seed: generateSeed(), readyCount: 0 };
+        ws.roomCode = code; ws.playerIndex = 0; ws.isReady = false;
         ws.send(JSON.stringify({ type: 'created', code, playerIndex: 0 }));
         break;
       }
@@ -39,9 +40,11 @@ wss.on('connection', (ws) => {
         if (!room) { ws.send(JSON.stringify({ type: 'error', msg: 'Raum nicht gefunden!' })); return; }
         if (room.players[1]) { ws.send(JSON.stringify({ type: 'error', msg: 'Raum ist voll!' })); return; }
         ws.profile = { name: msg.name || 'Spieler 2', avatar: msg.avatar || null };
-        room.players[1] = ws; ws.roomCode = code; ws.playerIndex = 1;
+        room.players[1] = ws; ws.roomCode = code; ws.playerIndex = 1; ws.isReady = false;
+        // Profile austauschen
         ws.send(JSON.stringify({ type: 'joined', code, playerIndex: 1, oppName: room.players[0].profile.name, oppAvatar: room.players[0].profile.avatar }));
         room.players[0].send(JSON.stringify({ type: 'opponent_profile', name: ws.profile.name, avatar: ws.profile.avatar }));
+        // Beide starten mit gleichem Seed
         broadcast(room, { type: 'start', seed: room.seed });
         break;
       }
@@ -55,14 +58,25 @@ wss.on('connection', (ws) => {
         broadcastExcept(room, { type:'dead', playerIndex:ws.playerIndex, score:msg.score }, ws);
         break;
       }
-      case 'restart': {
+      case 'ready': {
+        // Spieler drückt "Weiter" - beide müssen ready sein
         const room = rooms[ws.roomCode]; if (!room) return;
-        room.seed = generateSeed();
-        broadcast(room, { type:'restart', seed:room.seed });
+        ws.isReady = true;
+        const allReady = room.players.every(p => p && p.isReady);
+        if(allReady) {
+          // Beide bereit - neuen Seed generieren und restart
+          room.seed = generateSeed();
+          room.players.forEach(p => { if(p) p.isReady = false; });
+          broadcast(room, { type: 'restart', seed: room.seed });
+        } else {
+          // Noch nicht alle bereit - dem anderen mitteilen
+          broadcastExcept(room, { type: 'opponent_ready' }, ws);
+        }
         break;
       }
     }
   });
+
   ws.on('close', () => {
     if (!ws.roomCode) return;
     const room = rooms[ws.roomCode]; if (!room) return;
