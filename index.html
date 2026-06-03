@@ -241,11 +241,55 @@ canvas{
 .rank-1 .hiscore-rank{color:#ffd700;}
 .rank-2 .hiscore-rank{color:#aaa;}
 .rank-3 .hiscore-rank{color:#cd7f32;}
+
+/* Screen Shake */
+@keyframes shake{
+  0%,100%{transform:translate(0,0);}
+  20%{transform:translate(-6px,4px);}
+  40%{transform:translate(6px,-4px);}
+  60%{transform:translate(-4px,6px);}
+  80%{transform:translate(4px,-2px);}
+}
+.shaking{ animation:shake 0.4s ease; }
+
+/* Achievement Toast */
+#achievementToast{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);
+  background:rgba(255,215,0,0.95);backdrop-filter:blur(12px);
+  border:1.5px solid rgba(255,215,0,0.8);border-radius:20px;
+  padding:10px 20px;font-size:14px;font-weight:700;color:#5a4500;
+  z-index:100;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events:none;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(255,215,0,0.4);
+}
+#achievementToast.show{ transform:translateX(-50%) translateY(0); }
+
+
+/* Theme Selector */
+#themeBar{
+  display:flex;gap:8px;margin-top:8px;
+}
+.theme-dot{
+  width:24px;height:24px;border-radius:50%;cursor:pointer;
+  border:2px solid rgba(255,255,255,0.5);transition:transform 0.15s;
+}
+.theme-dot:hover,.theme-dot.active{transform:scale(1.25);border-color:#fff;}
+
+/* Music Toggle */
+#musicBtn{
+  position:fixed;bottom:12px;right:12px;
+  background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);
+  border:1.5px solid rgba(255,255,255,0.4);border-radius:50%;
+  width:36px;height:36px;font-size:16px;cursor:pointer;
+  z-index:20;display:flex;align-items:center;justify-content:center;
+}
 </style>
 </head>
 <body>
 
 
+<div id="achievementToast">🏅 Achievement!</div>
+<button id="musicBtn" title="Musik">🎵</button>
 <div id="cloudLayer" style="position:fixed;top:0;left:0;width:100%;height:60%;pointer-events:none;z-index:0;overflow:hidden;display:none;"></div>
 <canvas id="gc"
 ></canvas>
@@ -299,7 +343,17 @@ canvas{
     <input type="file" id="customPipeInput" accept="image/*" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;">
   </div>
 
-  <button id="btnSaveCustomize" style="width:100%;max-width:280px;padding:15px;background:rgba(255,215,0,0.4);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#5a4500;border:1.5px solid rgba(255,215,0,0.65);border-radius:20px;font-size:17px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(255,215,0,0.3),inset 0 1px 0 rgba(255,255,255,0.5);">✅ Speichern & zurück</button>
+  <div style="width:100%;max-width:280px;margin-bottom:12px;">
+  <div style="font-size:12px;font-weight:700;color:rgba(30,80,150,0.7);margin-bottom:8px;letter-spacing:0.5px;">🎨 THEME</div>
+  <div id="themeBar">
+    <div class="theme-dot active" data-theme="default" style="background:linear-gradient(135deg,#a8d8ff,#7fc469);" title="Standard"></div>
+    <div class="theme-dot" data-theme="night" style="background:linear-gradient(135deg,#1a1a3e,#0d2040);" title="Nacht"></div>
+    <div class="theme-dot" data-theme="space" style="background:linear-gradient(135deg,#0a0a2e,#1a0a3e);" title="Weltraum"></div>
+    <div class="theme-dot" data-theme="underwater" style="background:linear-gradient(135deg,#006994,#00b4d8);" title="Unterwasser"></div>
+    <div class="theme-dot" data-theme="sunset" style="background:linear-gradient(135deg,#ff6b35,#f7c59f);" title="Sonnenuntergang"></div>
+  </div>
+</div>
+<button id="btnSaveCustomize" style="width:100%;max-width:280px;padding:15px;background:rgba(255,215,0,0.4);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#5a4500;border:1.5px solid rgba(255,215,0,0.65);border-radius:20px;font-size:17px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(255,215,0,0.3),inset 0 1px 0 rgba(255,255,255,0.5);">✅ Speichern & zurück</button>
 </div>
 
 <!-- STATS SCREEN -->
@@ -365,6 +419,132 @@ canvas{
 
 
 // ── EASY MODE ────────────────────────────────────────────
+// ── SOUND ────────────────────────────────────────────────
+let audioCtx = null;
+function getAudio(){ if(!audioCtx) audioCtx = new(window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function playSound(type){
+  try{
+    const ctx=getAudio();
+    if(type==='jump'){
+      const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+      o.frequency.setValueAtTime(400,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(600,ctx.currentTime+0.1);
+      g.gain.setValueAtTime(0.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);
+      o.start();o.stop(ctx.currentTime+0.15);
+    } else if(type==='point'){
+      [523,659,784].forEach((f,i)=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+        o.frequency.value=f;g.gain.setValueAtTime(0.08,ctx.currentTime+i*0.08);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.08+0.15);
+        o.start(ctx.currentTime+i*0.08);o.stop(ctx.currentTime+i*0.08+0.15);
+      });
+    } else if(type==='death'){
+      const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+      o.type='sawtooth';o.frequency.setValueAtTime(300,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(50,ctx.currentTime+0.4);
+      g.gain.setValueAtTime(0.18,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+      o.start();o.stop(ctx.currentTime+0.4);
+    } else if(type==='powerup'){
+      [523,659,784,1047].forEach((f,i)=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+        o.frequency.value=f;g.gain.setValueAtTime(0.08,ctx.currentTime+i*0.07);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.07+0.12);
+        o.start(ctx.currentTime+i*0.07);o.stop(ctx.currentTime+i*0.07+0.12);
+      });
+    } else if(type==='special'){
+      const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+      o.type='triangle';o.frequency.setValueAtTime(1000,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(1500,ctx.currentTime+0.2);
+      g.gain.setValueAtTime(0.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);
+      o.start();o.stop(ctx.currentTime+0.25);
+    } else if(type==='combo'){
+      const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+      o.frequency.setValueAtTime(800,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(1200,ctx.currentTime+0.15);
+      g.gain.setValueAtTime(0.1,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.2);
+      o.start();o.stop(ctx.currentTime+0.2);
+    }
+  }catch(e){}
+}
+let musicPlaying=false;
+function toggleMusic(){
+  musicPlaying=!musicPlaying;
+  document.getElementById('musicBtn').textContent=musicPlaying?'🔇':'🎵';
+  if(musicPlaying) loopMusic();
+}
+function loopMusic(){
+  if(!musicPlaying) return;
+  try{
+    const ctx=getAudio();
+    const notes=[261,294,329,392,440,392,329,294];
+    let step=0;
+    function n(){
+      if(!musicPlaying) return;
+      const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.value=notes[step%8]*(step%16<8?1:0.75);
+      g.gain.setValueAtTime(0.04,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
+      o.start();o.stop(ctx.currentTime+0.22);step++;
+      setTimeout(n,280);
+    }
+    n();
+  }catch(e){}
+}
+
+// ── SCREEN SHAKE ─────────────────────────────────────────
+function screenShake(){
+  const c=document.getElementById('gc');
+  c.classList.remove('shaking');void c.offsetWidth;c.classList.add('shaking');
+  setTimeout(()=>c.classList.remove('shaking'),400);
+}
+
+let comboCount=0;
+
+// ── TAG/NACHT ─────────────────────────────────────────────
+const TIME_TH=[
+  {score:0, sky1:'#a8d8ff',sky2:'#dcf4ff',sky3:'#7fc469'},
+  {score:10,sky1:'#f4a460',sky2:'#ff8c42',sky3:'#8b5e3c'},
+  {score:20,sky1:'#1a1a4e',sky2:'#0d1b2a',sky3:'#2d4a1e'},
+  {score:35,sky1:'#050510',sky2:'#0a0a2e',sky3:'#0a1a0a'},
+];
+function getCurrentSky(){let t=TIME_TH[0];for(const th of TIME_TH)if(score>=th.score)t=th;return t;}
+
+// ── THEMES ────────────────────────────────────────────────
+const THEMES={
+  default:{sky1:'#a8d8ff',sky2:'#dcf4ff',sky3:'#7fc469',g1:'#4a8a2c',g2:'#62aa3a'},
+  night:{sky1:'#1a1a3e',sky2:'#0d2040',sky3:'#1a3a10',g1:'#1a3a10',g2:'#2a5a20'},
+  space:{sky1:'#0a0a2e',sky2:'#1a0a3e',sky3:'#0a1a3e',g1:'#1a0a2e',g2:'#2a1a4e'},
+  underwater:{sky1:'#006994',sky2:'#00b4d8',sky3:'#0077b6',g1:'#005577',g2:'#0077aa'},
+  sunset:{sky1:'#ff6b35',sky2:'#f7c59f',sky3:'#8b4513',g1:'#6b3310',g2:'#8b4513'},
+};
+let currentTheme='default';
+function applyTheme(name){
+  currentTheme=name;
+  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('active',d.dataset.theme===name));
+  // Body Hintergrund updaten
+  const thm=THEMES[name]||THEMES.default;
+  const bg='linear-gradient(to bottom,'+thm.sky1+' 0%,'+thm.sky2+' 65%,'+thm.sky3+' 100%)';
+  ['startScreen','customizeScreen','mpScreen','statsScreen'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.background=bg;
+  });
+  document.body.style.background=bg;
+}
+
+// ── ACHIEVEMENTS ─────────────────────────────────────────
+const ACHIEVEMENTS={
+  first:{label:'Erster Punkt! 🎯',check:()=>score>=1},
+  ten:{label:'10 Punkte! 🔥',check:()=>score>=10},
+  powerup:{label:'Power-Up! ⚡',check:()=>Object.keys(activePUs).length>0},
+  night:{label:'Nachtflug! 🌙',check:()=>score>=20},
+};
+let unlockedAch=JSON.parse(localStorage.getItem('ach')||'{}');
+function checkAchievements(){
+  Object.entries(ACHIEVEMENTS).forEach(([k,a])=>{
+    if(!unlockedAch[k]&&a.check()){unlockedAch[k]=true;localStorage.setItem('ach',JSON.stringify(unlockedAch));showAchievement(a.label);}
+  });
+}
+function showAchievement(label){
+  const t=document.getElementById('achievementToast');
+  t.textContent='🏅 '+label;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+let specialPipeHit=false;
+
 let easyMode = false;
 function toggleEasyMode(){
   if(state==='play') return;
@@ -533,6 +713,10 @@ function checkPowerupCollect(){
       p.collected=true;
       showCollectPopup(p.type);
       activatePowerup(p.type);
+      playSound('powerup');
+      checkAchievements();
+      playSound('powerup');
+      checkAchievements();
     }
   });
   powerups = powerups.filter(p=>!p.collected);
@@ -771,6 +955,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('customPipeBox').addEventListener('click', ()=>document.getElementById('customPipeInput').click());
   document.getElementById('btnStats') && document.getElementById('btnStats').addEventListener('click', openStats);
   document.getElementById('btnCloseStats') && document.getElementById('btnCloseStats').addEventListener('click', ()=>{showScreen('startScreen'); document.getElementById('menuBtn').style.display='none';});
+  document.getElementById('musicBtn').addEventListener('click', toggleMusic);
+  document.querySelectorAll('.theme-dot').forEach(d=>{
+    d.addEventListener('click', ()=>applyTheme(d.dataset.theme));
+  });
+  document.getElementById('musicBtn') && document.getElementById('musicBtn').addEventListener('click', toggleMusic);
+  document.querySelectorAll('.theme-dot').forEach(d=>d.addEventListener('click',()=>applyTheme(d.dataset.theme)));
   document.getElementById('startBirdPreview').addEventListener('click', openCustomize);
   document.getElementById('customizeHint').addEventListener('click', openCustomize);
   
@@ -1120,8 +1310,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 function init(){
   iAmDead=false;
+  comboCount=0;comboTimer=0;specialPipeHit=false;
   bird={x:90,y:H/2,vy:0,trail:[]};
-  pipes=[];score=0;frame=0;rageText='';particles=[];
+  pipes=[];powerups=[];score=0;frame=0;rageText='';particles=[];collectPopups=[];
 }
 
 function jump(){
@@ -1319,9 +1510,23 @@ function drawRainbow(rb){
   });ctx.globalAlpha=1;
 }
 function drawBg(){
+  const thm = THEMES[currentTheme] || THEMES.default;
+  // Tag/Nacht: überschreibt Theme-Farben ab Score 10
+  let sky1=thm.sky1, sky2=thm.sky2, sky3=thm.sky3;
+  if(!easyMode && score>=10){
+    const t = getCurrentSky();
+    sky1=t.sky1; sky2=t.sky2; sky3=t.sky3;
+  }
   const sk=ctx.createLinearGradient(0,0,0,H);
-  sk.addColorStop(0,'#a8d8ff');sk.addColorStop(0.65,'#dcf4ff');sk.addColorStop(1,'#7fc469');
+  sk.addColorStop(0,sky1);sk.addColorStop(0.65,sky2);sk.addColorStop(1,sky3);
   ctx.fillStyle=sk;ctx.fillRect(0,0,W,H);
+  // Sterne ab Score 20
+  if(!easyMode && score>=20){
+    ctx.fillStyle='rgba(255,255,255,0.85)';
+    [[50,40],[120,80],[200,30],[300,60],[350,20],[80,110],[250,100],[170,55]].forEach(([sx,sy])=>{
+      ctx.beginPath();ctx.arc(sx,sy,1.5,0,Math.PI*2);ctx.fill();
+    });
+  }
   rainbows.forEach(r=>drawRainbow(r));
   ctx.fillStyle='rgba(255,255,255,0.82)';
   [[45,42,42,19],[155,28,52,21],[295,52,37,17],[358,33,44,18],[110,80,28,13]].forEach(([x,y,rx,ry])=>{
@@ -1370,6 +1575,16 @@ function drawUnicorn(x,y,s,flip){
 
 // ── ROHRE = PERSON ────────────────────────────────────────
 function drawPipe(p){
+  if(p.special){
+    // Goldener Schimmer
+    ctx.save();
+    ctx.globalAlpha=0.25;
+    ctx.fillStyle='#ffd700';
+    if(p.top>0) ctx.fillRect(p.x,0,PW,p.top);
+    const by2=p.top+p.gap||getGAP();
+    ctx.fillRect(p.x,by2,PW,H-50-by2);
+    ctx.restore();
+  }
   const gap = p.gap || getGAP();
   if(p.top>0){
     ctx.save();
@@ -1472,7 +1687,8 @@ function loop(){
       const maxTop = H*0.55;
       const rng = mpMode ? seededRand() : Math.random();
       const newTop = minTop+rng*(maxTop-minTop-(getGAP()-BASE_GAP)*0.3);
-      pipes.push({x:W, top:newTop, gap:getGAP(), passed:false});
+      const isSpecial=!easyMode&&Math.random()<0.12;
+      pipes.push({x:W,top:newTop,gap:getGAP(),passed:false,special:isSpecial});
       spawnPowerup(W, newTop, getGAP());
     }
 
@@ -1486,9 +1702,13 @@ function loop(){
       p.x-=spd;
       if(!p.passed&&p.x+PW<bird.x){
         p.passed=true;
-        score += doubleScore ? 2 : 1;
+        const pts = (doubleScore ? 2 : 1) * (p.special ? 2 : 1);
+        score += pts;
+        if(p.special){ specialPipeHit=true; playSound('special'); spawnScoreParticles(); }
+        else { playSound('point'); }
         if(score>hiScore) hiScore=score;
         if(score%5===0) spawnScoreParticles();
+        checkAchievements();
 
       }
     });
@@ -1500,6 +1720,8 @@ function loop(){
       state='dead';
       iAmDead = true;
       vibrateOnDeath();
+      screenShake();
+      playSound('death');
       if(!mpMode) recordScore(score, myName);
       if(mpMode && ws){
         ws.send(JSON.stringify({type:'dead', score:score}));
