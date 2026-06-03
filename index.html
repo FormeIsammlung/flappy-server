@@ -1344,9 +1344,9 @@ C.addEventListener('click', function(e){
   if(state==='dead'){
     if(mx>W/2-70&&mx<W/2+70&&my>H/2+48&&my<H/2+80) restartGame();
   } else if(state==='ready'){
-    bird.y = H/2 + Math.sin(frame*0.05)*8;
-    ctx.fillStyle='rgba(0,0,30,0.35)';ctx.fillRect(0,0,W,H);
-    txt('Leertaste oder Tippen!',W/2,H/2+80,18,'#ffd700','#000');
+    state='play';
+    bird.vy=getJMP();
+    spawnJumpParticles();
   } else {
     jump();
   }
@@ -1360,9 +1360,9 @@ C.addEventListener('touchstart',e=>{
   if(state==='dead'){
     if(mx>W/2-70&&mx<W/2+70&&my>H/2+48&&my<H/2+80) restartGame();
   } else if(state==='ready'){
-    bird.y = H/2 + Math.sin(frame*0.05)*8;
-    ctx.fillStyle='rgba(0,0,30,0.35)';ctx.fillRect(0,0,W,H);
-    txt('Leertaste oder Tippen!',W/2,H/2+80,18,'#ffd700','#000');
+    state='play';
+    bird.vy=getJMP();
+    spawnJumpParticles();
   } else {
     jump();
   }
