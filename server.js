@@ -1,9 +1,18 @@
 const http = require('http');
 const WebSocket = require('ws');
 
+// Globale Highscores (im Speicher - reset bei Server-Neustart)
+// Für persistenz müsste man eine DB nutzen
+let globalScores = [];
+
 const server = http.createServer((req, res) => {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('Flappy Face Multiplayer Server läuft!');
+  res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
+  // GET /scores → Top 10 zurückgeben
+  if(req.url === '/scores') {
+    res.end(JSON.stringify(globalScores.slice(0,10)));
+  } else {
+    res.end(JSON.stringify({status:'ok'}));
+  }
 });
 
 const wss = new WebSocket.Server({ server });
@@ -26,6 +35,25 @@ wss.on('connection', (ws) => {
   ws.on('message', (raw) => {
     let msg; try { msg = JSON.parse(raw); } catch(e) { return; }
     switch(msg.type) {
+
+      case 'submit_score': {
+        // Score einreichen
+        const name = (msg.name || 'Anonym').substring(0, 12);
+        const score = parseInt(msg.score) || 0;
+        if(score > 0) {
+          globalScores.push({ name, score, date: new Date().toLocaleDateString('de') });
+          globalScores.sort((a,b) => b.score - a.score);
+          globalScores = globalScores.slice(0, 50); // Max 50 Einträge
+        }
+        ws.send(JSON.stringify({ type: 'scores', scores: globalScores.slice(0,10) }));
+        break;
+      }
+
+      case 'get_scores': {
+        ws.send(JSON.stringify({ type: 'scores', scores: globalScores.slice(0,10) }));
+        break;
+      }
+
       case 'create': {
         const code = generateCode();
         ws.profile = { name: msg.name || 'Spieler 1', avatar: msg.avatar || null };
@@ -41,10 +69,8 @@ wss.on('connection', (ws) => {
         if (room.players[1]) { ws.send(JSON.stringify({ type: 'error', msg: 'Raum ist voll!' })); return; }
         ws.profile = { name: msg.name || 'Spieler 2', avatar: msg.avatar || null };
         room.players[1] = ws; ws.roomCode = code; ws.playerIndex = 1; ws.isReady = false;
-        // Profile austauschen
         ws.send(JSON.stringify({ type: 'joined', code, playerIndex: 1, oppName: room.players[0].profile.name, oppAvatar: room.players[0].profile.avatar }));
         room.players[0].send(JSON.stringify({ type: 'opponent_profile', name: ws.profile.name, avatar: ws.profile.avatar }));
-        // Beide starten mit gleichem Seed
         broadcast(room, { type: 'start', seed: room.seed });
         break;
       }
@@ -59,17 +85,14 @@ wss.on('connection', (ws) => {
         break;
       }
       case 'ready': {
-        // Spieler drückt "Weiter" - beide müssen ready sein
         const room = rooms[ws.roomCode]; if (!room) return;
         ws.isReady = true;
         const allReady = room.players.every(p => p && p.isReady);
         if(allReady) {
-          // Beide bereit - neuen Seed generieren und restart
           room.seed = generateSeed();
           room.players.forEach(p => { if(p) p.isReady = false; });
           broadcast(room, { type: 'restart', seed: room.seed });
         } else {
-          // Noch nicht alle bereit - dem anderen mitteilen
           broadcastExcept(room, { type: 'opponent_ready' }, ws);
         }
         break;
