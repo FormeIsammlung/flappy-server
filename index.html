@@ -178,66 +178,89 @@ canvas{
   animation:pulse 0.9s ease-in-out infinite;
 }
 @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+
+/* Menu Button */
+#menuBtn{
+  position:fixed;top:12px;left:12px;
+  background:rgba(255,255,255,0.2);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  color:#fff;border:1.5px solid rgba(255,255,255,0.4);border-radius:20px;
+  padding:7px 16px;font-size:13px;font-weight:600;
+  cursor:pointer;z-index:20;display:none;
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);transition:all 0.15s;
+}
+#menuBtn:hover{background:rgba(255,255,255,0.35);}
 </style>
 </head>
 <body>
-<div id="uploadScreen">
-  <h1>🎮 Flappy Face</h1>
-  <p>Lade deine Bilder hoch!</p>
 
-  <div class="upload-box" id="box1" onclick="document.getElementById('inp1').click()">
-    <img id="prev1" src=""/>
-    <div class="icon" id="icon1">🐦</div>
-    <label>Vogel-Gesicht</label>
-    <div class="name" id="name1">Klicken zum Hochladen</div>
-    <input type="file" id="inp1" accept="image/*">
-  </div>
-
-  <div class="upload-box" id="box2" onclick="document.getElementById('inp2').click()">
-    <img id="prev2" src=""/>
-    <div class="icon" id="icon2">🚧</div>
-    <label>Rohr-Person</label>
-    <div class="name" id="name2">Klicken zum Hochladen</div>
-    <input type="file" id="inp2" accept="image/*">
-  </div>
-
-  <button id="startBtn">▶ Spielen!</button>
-  <button class="mp-btn" id="mpBtn" style="max-width:320px;margin-top:8px;background:#4af;color:#1a1a2e;">🎮 Multiplayer</button>
-  <span id="skipBtn">Überspringen (Standard-Bilder)</span>
-</div>
 
 <canvas id="gc"
 ></canvas>
-<div id="profileScreen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1a2e;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:999;color:white;font-family:sans-serif;padding:20px;box-sizing:border-box;">
-  <h2>👤 Dein Profil</h2>
-  <p style="color:#aac;font-size:13px;margin-bottom:20px;text-align:center;">Für den Multiplayer-Modus</p>
-  <div id="avatarBox" style="width:90px;height:90px;border-radius:50%;background:#334;display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer;border:3px dashed #556;overflow:hidden;margin-bottom:4px;">
-    <span id="avatarEmoji">😀</span>
-    <img id="avatarPreview" src="" style="display:none;width:100%;height:100%;object-fit:cover;"/>
-    <input type="file" id="avatarInput" accept="image/*" style="display:none">
+<!-- START SCREEN -->
+<div id="startScreen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom,#a8d8ff 0%,#dcf4ff 65%,#7fc469 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;font-family:sans-serif;">
+  <div style="text-align:center;margin-bottom:8px;">
+    <div style="font-size:52px;font-weight:900;color:#1a1a2e;letter-spacing:-1px;line-height:1;text-shadow:3px 3px 0px rgba(255,255,255,0.6),0px 4px 15px rgba(0,0,0,0.15);">Flappy</div>
+    <div style="font-size:52px;font-weight:900;background:linear-gradient(135deg,#ff6b6b,#ffd700,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px;line-height:1;filter:drop-shadow(2px 2px 4px rgba(0,0,0,0.2));">Face</div>
+    <div style="font-size:13px;color:#446;letter-spacing:4px;text-transform:uppercase;margin-top:4px;font-weight:600;">THE GAME</div>
   </div>
-  <div style="font-size:11px;color:#778;margin-bottom:12px;text-align:center;">Klicken für eigenes Foto (optional)</div>
-  <input id="nameInput" maxlength="12" placeholder="Dein Name..." autocomplete="off" style="width:100%;max-width:300px;padding:12px;margin:8px 0;border-radius:10px;border:2px solid #556;background:#111;color:white;font-size:18px;text-align:center;box-sizing:border-box;">
-  <button id="profileSaveBtn" style="width:100%;max-width:300px;padding:14px;margin-top:8px;background:#4af;color:#1a1a2e;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;">✅ Weiter zum Multiplayer</button>
-  <button id="profileSkipBtn" style="margin-top:10px;color:#556;font-size:13px;cursor:pointer;text-decoration:underline;background:none;border:none;">Überspringen</button>
+  <p style="color:#336;font-size:13px;margin-bottom:28px;">Wähle deinen Modus</p>
+  <div id="startBirdPreview" style="width:72px;height:72px;border-radius:50%;background:#ddf;border:3px solid #fff;overflow:hidden;margin-bottom:20px;cursor:pointer;position:relative;" id="startBirdPreview">
+    <img id="startBirdImg" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+    <div id="startBirdEmoji" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;">😀</div>
+  </div
+>
+  <button id="btnNormal" style="width:240px;padding:15px;margin:5px;background:#ffd700;color:#1a1a2e;border:none;border-radius:14px;font-size:17px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);">▶ Spielen</button>
+  <button id="btnEasy" style="width:240px;padding:15px;margin:5px;background:#88ff44;color:#1a1a2e;border:none;border-radius:14px;font-size:17px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);">🌱 Easy Mode</button>
+  <button id="btnMulti" style="width:240px;padding:15px;margin:5px;background:#4af;color:#1a1a2e;border:none;border-radius:14px;font-size:17px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);">👥 Multiplayer</button>
+  <button id="btnCustomize" style="width:240px;padding:15px;margin:5px;background:#cc88ff;color:#1a1a2e;border:none;border-radius:14px;font-size:17px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);">🎨 Customize</button>
+
 </div>
 
-<div id="mpScreen" style="display:none;">
-  <h2>🎮 Multiplayer</h2>
-  <p>Spiele gegen einen Freund!</p>
+<!-- CUSTOMIZE SCREEN -->
+<div id="customizeScreen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom,#a8d8ff 0%,#dcf4ff 65%,#7fc469 100%);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:999;font-family:sans-serif;padding:20px;box-sizing:border-box;">
+  <h2 style="font-size:32px;font-weight:bold;color:#1a1a2e;margin-bottom:4px;">🎨 Customize</h2>
+  <p style="color:#336;font-size:13px;margin-bottom:20px;text-align:center;">Name & Bilder für Vogel und Rohre</p>
+
+  <input id="playerNameInput" maxlength="12" placeholder="Dein Name..." autocomplete="off" style="width:100%;max-width:280px;padding:13px;margin-bottom:12px;border-radius:12px;border:2px solid rgba(0,0,0,0.15);background:rgba(255,255,255,0.8);color:#1a1a2e;font-size:17px;text-align:center;box-sizing:border-box;">
+
+  <div id="customBirdBox" style="width:100%;max-width:280px;margin-bottom:10px;border:2px dashed rgba(0,0,0,0.2);border-radius:14px;padding:14px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.35);">
+    <div style="font-size:28px;margin-bottom:3px;">🐦</div>
+    <div style="font-size:14px;color:#1a1a2e;font-weight:600;">Vogel-Bild hochladen</div>
+    <div id="customBirdName" style="font-size:11px;color:#446;margin-top:3px;">Optional</div>
+    <input type="file" id="customBirdInput" accept="image/*" style="display:none">
+  </div>
+
+  <div id="customPipeBox" style="width:100%;max-width:280px;margin-bottom:18px;border:2px dashed rgba(0,0,0,0.2);border-radius:14px;padding:14px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.35);">
+    <div style="font-size:28px;margin-bottom:3px;">🚧</div>
+    <div style="font-size:14px;color:#1a1a2e;font-weight:600;">Rohr-Bild hochladen</div>
+    <div id="customPipeName" style="font-size:11px;color:#446;margin-top:3px;">Optional</div>
+    <input type="file" id="customPipeInput" accept="image/*" style="display:none">
+  </div>
+
+  <button id="btnSaveCustomize" style="width:100%;max-width:280px;padding:15px;background:#ffd700;color:#1a1a2e;border:none;border-radius:14px;font-size:17px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);">✅ Speichern & zurück</button>
+</div>
+
+<div id="mpScreen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom,#a8d8ff 0%,#dcf4ff 65%,#7fc469 100%);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:998;font-family:sans-serif;padding:20px;box-sizing:border-box;">
   <div id="mpMenu">
-    <button class="mp-btn" id="createBtn">🏠 Raum erstellen</button>
-    <button class="mp-btn" id="joinBtn">🔗 Raum beitreten</button>
-    <button id="mpBack">← Zurück</button>
+    <h2 style="font-size:32px;font-weight:bold;color:#1a1a2e;margin-bottom:4px;text-align:center;">👥 Multiplayer</h2>
+    <p style="color:#336;font-size:13px;margin-bottom:28px;text-align:center;">Spiele gegen einen Freund!</p>
+    <button id="createBtn" style="width:240px;padding:15px;margin:5px;background:#ffd700;color:#1a1a2e;border:none;border-radius:14px;font-size:17px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);display:block;">🏠 Raum erstellen</button>
+    <button id="joinBtn" style="width:240px;padding:15px;margin:5px;background:#4af;color:#1a1a2e;border:none;border-radius:14px;font-size:17px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);display:block;">🔗 Raum beitreten</button>
   </div>
   <div id="mpJoinForm" style="display:none;width:100%;max-width:300px;text-align:center;">
-    <p>Code eingeben:</p>
-    <input id="codeInput" maxlength="5" placeholder="XXXXX">
-    <button class="mp-btn" id="joinConfirm" style="background:#4af;color:#1a1a2e;">Beitreten</button>
-    <button id="mpBack2" style="background:transparent;color:#556;font-size:13px;cursor:pointer;text-decoration:underline;margin-top:8px;border:none;">← Zurück</button>
+    <h2 style="font-size:26px;font-weight:bold;color:#1a1a2e;margin-bottom:12px;">🔗 Beitreten</h2>
+    <input id="codeInput" maxlength="5" placeholder="XXXXX" style="width:100%;padding:14px;border-radius:12px;border:2px solid rgba(0,0,0,0.15);background:rgba(255,255,255,0.8);color:#1a1a2e;font-size:26px;text-align:center;letter-spacing:8px;text-transform:uppercase;box-sizing:border-box;margin-bottom:10px;">
+    <button id="joinConfirm" style="width:100%;padding:14px;background:#4af;color:#1a1a2e;border:none;border-radius:14px;font-size:16px;font-weight:bold;cursor:pointer;">✅ Beitreten</button>
+    <button id="mpBack2" style="margin-top:8px;background:none;border:none;color:#446;font-size:13px;cursor:pointer;text-decoration:underline;display:block;">← Zurück</button>
   </div>
-  <div id="mpCodeDisplay" style="display:none;"></div>
-  <div id="mpStatus" style="min-height:40px;text-align:center;padding:8px;"></div>
+  <div id="mpCodeDisplay" style="display:none;text-align:center;">
+    <h2 style="font-size:24px;font-weight:bold;color:#1a1a2e;margin-bottom:8px;">🏠 Dein Code</h2>
+    <p style="color:#336;font-size:13px;margin-bottom:8px;">Teile diesen Code mit deinem Freund:</p>
+    <div id="mpCodeNum" style="font-size:52px;font-weight:bold;letter-spacing:10px;color:#1a1a2e;background:rgba(255,255,255,0.7);border-radius:16px;padding:14px 20px;margin-bottom:10px;"></div>
+  </div>
+  <div id="mpStatus" style="min-height:36px;text-align:center;padding:6px;color:#1a1a2e;font-size:14px;font-weight:500;"></div>
+  <button id="mpBack" style="background:none;border:none;color:#446;font-size:13px;cursor:pointer;text-decoration:underline;">← Zurück zum Menü</button>
 </div>
 <div id="opponentInfo" style="display:none;">
   <div id="oppAvatar"><img id="oppAvatarImg" src="" style="display:none">👤</div>
@@ -245,6 +268,7 @@ canvas{
   <div><span id="oppScore">0</span> Pkt</div>
 </div>
 <div id="powerupBar"></div>
+<button id="menuBtn">← Menü</button>
 <div id="mpResultScreen">
   <div id="mpResTitle">🏆 Ergebnis</div>
   <div class="mp-res-row" id="mpRes1">
@@ -261,58 +285,10 @@ canvas{
 <div id="countdownOverlay">
   <div id="countdownNum">3</div>
 </div>
-<button id="easyBtn">🌱 Easy</button>
-<button id="mpToggleBtn">🎮 Multiplayer</button>
 <div id="ui">Klicken · Leertaste · Tippen</div>
 <script>
 // ── Upload-Screen Logik ───────────────────────────────────
-let uploadedBird = null;
-let uploadedPipe = null;
 
-function handleUpload(inputId, prevId, iconId, nameId, type){
-  const inp = document.getElementById(inputId);
-  inp.addEventListener('change', function(){
-    const file = inp.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e){
-      const src = e.target.result;
-      if(type==='bird') uploadedBird = src;
-      else uploadedPipe = src;
-
-      const prev = document.getElementById(prevId);
-      prev.src = src;
-      prev.style.display = 'block';
-      document.getElementById(iconId).style.display = 'none';
-      document.getElementById(nameId).textContent = file.name;
-
-      // Grüner Rahmen wenn hochgeladen
-      document.getElementById(type==='bird'?'box1':'box2').style.borderColor = '#4f4';
-      checkReady();
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function checkReady(){
-  const btn = document.getElementById('startBtn');
-  if(uploadedBird && uploadedPipe){
-    btn.classList.add('ready');
-  }
-}
-
-function startGame(){
-  if(uploadedBird) imgBird.src = uploadedBird;
-  if(uploadedPipe) imgPipe.src = uploadedPipe;
-  document.getElementById('uploadScreen').style.display = 'none';
-}
-
-function skipUpload(){
-  document.getElementById('uploadScreen').style.display = 'none';
-}
-
-handleUpload('inp1','prev1','icon1','name1','bird');
-handleUpload('inp2','prev2','icon2','name2','pipe');
 
 // ── EASY MODE ────────────────────────────────────────────
 let easyMode = false;
@@ -529,46 +505,125 @@ function seededRand(){
 const BASE_SPEED=3.2, BASE_INTERVAL=95;
 
 
-// ── PROFIL ────────────────────────────────────────────────
+// ── PROFIL & CUSTOMIZE ───────────────────────────────────
 let myName = 'Spieler';
-let myAvatar = null; // base64
+let myAvatar = null;
 let oppName = 'Gegner';
 let oppAvatar = null;
+let uploadedBird = null;
+let uploadedPipe = null;
 
-function openProfileScreen(){
-  document.getElementById('profileScreen').style.display = 'flex';
+function openCustomize(){
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('customizeScreen').style.display='flex';
+  document.getElementById('menuBtn').style.display='block';
+  if(myName !== 'Spieler') document.getElementById('playerNameInput').value = myName;
 }
 
-function saveProfile(){
-  const nameVal = document.getElementById('nameInput').value.trim();
+function saveCustomize(){
+  const nameVal = document.getElementById('playerNameInput').value.trim();
   if(nameVal) myName = nameVal;
-  document.getElementById('profileScreen').style.display = 'none';
-  // Zum MP Screen
-  document.getElementById('mpScreen').style.display = 'flex';
-  document.getElementById('mpMenu').style.display = 'block';
-  document.getElementById('mpToggleBtn').style.display = 'none';
+  if(uploadedBird){ imgBird.src = uploadedBird; myAvatar = uploadedBird; }
+  if(uploadedPipe) imgPipe.src = uploadedPipe;
+  updateStartPreview();
+  document.getElementById('customizeScreen').style.display='none';
+  document.getElementById('startScreen').style.display='flex';
+  document.getElementById('menuBtn').style.display='none';
 }
 
-// Avatar Upload im Profil
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('avatarBox').addEventListener('click', ()=>{
-    document.getElementById('avatarInput').click();
+function updateStartPreview(){
+  if(myAvatar){
+    const img = document.getElementById('startBirdImg');
+    img.src = myAvatar; img.style.display='block';
+    document.getElementById('startBirdEmoji').style.display='none';
+  }
+}
+
+function startMode(mode){
+  if(uploadedBird) imgBird.src = uploadedBird;
+  if(uploadedPipe) imgPipe.src = uploadedPipe;
+  easyMode = (mode === 'easy');
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('menuBtn').style.display='block';
+  if(mode === 'multi'){
+    document.getElementById('mpScreen').style.display='flex';
+    document.getElementById('mpMenu').style.display='block';
+    document.getElementById('mpJoinForm').style.display='none';
+    document.getElementById('mpCodeDisplay').style.display='none';
+    document.getElementById('mpStatus').textContent='';
+    document.getElementById('menuBtn').style.display='block';
+    // state bleibt idle - kein Spielstart durch Canvas-Klick
+  } else if(mode === 'customize'){
+    openCustomize();
+  } else {
+    init(); state='idle';
+    document.getElementById('ui').textContent='Klicken oder Leertaste zum Starten';
+  }
+}
+
+function goToMenu(){
+  if(ws){ ws.close(); ws=null; }
+  mpMode=false; myPlayerIndex=-1; iAmDead=false;
+  state='idle';
+  // Alle Screens verstecken
+  ['mpScreen','mpResultScreen','opponentInfo','countdownOverlay','customizeScreen'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display='none';
   });
-  document.getElementById('avatarInput').addEventListener('change', function(){
+  document.getElementById('menuBtn').style.display='none';
+  document.getElementById('startScreen').style.display='flex';
+  document.getElementById('ui').textContent='';
+  deactivatePowerup();
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('btnSaveCustomize').addEventListener('click', saveCustomize);
+  document.getElementById('btnGoMenu') && document.getElementById('btnGoMenu').addEventListener('click', goToMenu);
+  document.getElementById('customBirdBox').addEventListener('click', ()=>document.getElementById('customBirdInput').click());
+  document.getElementById('customPipeBox').addEventListener('click', ()=>document.getElementById('customPipeInput').click());
+  document.getElementById('btnNormal').addEventListener('click', ()=>startMode('normal'));
+  document.getElementById('btnEasy').addEventListener('click', ()=>startMode('easy'));
+  document.getElementById('btnMulti').addEventListener('click', ()=>startMode('multi'));
+  document.getElementById('btnCustomize').addEventListener('click', openCustomize);
+  document.getElementById('customBirdInput').addEventListener('change', function(){
     const file = this.files[0]; if(!file) return;
     const reader = new FileReader();
     reader.onload = e => {
-      myAvatar = e.target.result;
-      const img = document.getElementById('avatarPreview');
-      img.src = myAvatar; img.style.display = 'block';
-      document.getElementById('avatarEmoji').style.display = 'none';
+      uploadedBird = e.target.result;
+      document.getElementById('customBirdName').textContent = '✅ ' + file.name;
     };
     reader.readAsDataURL(file);
   });
-  document.getElementById('profileSaveBtn').addEventListener('click', saveProfile);
-  document.getElementById('profileSkipBtn').addEventListener('click', saveProfile);
-  document.getElementById('nameInput').addEventListener('keydown', e => {
-    if(e.key === 'Enter') saveProfile();
+  document.getElementById('customPipeInput').addEventListener('change', function(){
+    const file = this.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadedPipe = e.target.result;
+      document.getElementById('customPipeName').textContent = '✅ ' + file.name;
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('menuBtn').addEventListener('click', goToMenu);
+  document.getElementById('mpBack').addEventListener('click', goToMenu);
+  document.getElementById('mpBack2').addEventListener('click', ()=>{
+    document.getElementById('mpJoinForm').style.display='none';
+    document.getElementById('mpMenu').style.display='block';
+  });
+  document.getElementById('mpWeiterBtn').addEventListener('click', restartGame);
+  document.getElementById('createBtn').addEventListener('click', ()=>{
+    document.getElementById('mpStatus').textContent='🔌 Verbinde...';
+    document.getElementById('mpMenu').style.display='none';
+    connectWS(()=>{ ws.send(JSON.stringify({type:'create',name:myName,avatar:myAvatar})); });
+  });
+  document.getElementById('joinBtn').addEventListener('click', ()=>{
+    document.getElementById('mpMenu').style.display='none';
+    document.getElementById('mpJoinForm').style.display='block';
+  });
+  document.getElementById('joinConfirm').addEventListener('click', ()=>{
+    const code = document.getElementById('codeInput').value.trim();
+    if(code.length!==5){ alert('Bitte 5-stelligen Code eingeben!'); return; }
+    document.getElementById('mpStatus').textContent='🔌 Verbinde...';
+    connectWS(()=>{ ws.send(JSON.stringify({type:'join',code:code,name:myName,avatar:myAvatar})); });
   });
 });
 
@@ -585,25 +640,11 @@ let bothDead = false;
 
 function goToMultiplayer(){
   if(state==='play') return;
-  state='idle';
-  document.getElementById('profileScreen').style.display='flex';
-  document.getElementById('mpToggleBtn').style.display='none';
-  // Vorausfüllen falls schon gesetzt
-  if(myName !== 'Spieler') document.getElementById('nameInput').value = myName;
+  goToMenu();
 }
 
 function goToSingleplayer(){
-  if(ws){ ws.close(); ws=null; }
-  mpMode=false; myPlayerIndex=-1;
-  document.getElementById('mpScreen').style.display='none';
-  document.getElementById('mpResultScreen').style.display='none';
-  document.getElementById('profileScreen').style.display='none';
-  document.getElementById('opponentInfo').style.display='none';
-  document.getElementById('mpToggleBtn').style.display='block';
-  document.getElementById('mpToggleBtn').textContent='🎮 Multiplayer';
-  document.getElementById('mpToggleBtn').style.borderColor='#4af';
-  document.getElementById('mpToggleBtn').style.color='#4af';
-  state='idle';
+  goToMenu();
 }
 
 function connectWS(callback){
@@ -660,7 +701,7 @@ function handleServerMsg(msg){
       myPlayerIndex = 0;
       roomCode = msg.code;
       document.getElementById('mpCodeDisplay').style.display='block';
-      document.getElementById('mpCodeDisplay').textContent = msg.code;
+      document.getElementById('mpCodeNum').textContent = msg.code;
       document.getElementById('mpStatus').textContent = '⏳ Warte auf Gegner...';
       break;
     case 'opponent_profile':
@@ -728,16 +769,12 @@ function handleServerMsg(msg){
 function startMultiplayer(){
   document.getElementById('mpScreen').style.display='none';
   document.getElementById('opponentInfo').style.display='block';
-  document.getElementById('mpToggleBtn').textContent='← Solo';
-  document.getElementById('mpToggleBtn').style.borderColor='#fa4';
-  document.getElementById('mpToggleBtn').style.color='#fa4';
-  document.getElementById('mpToggleBtn').onclick = goToSingleplayer;
-  mpMode = true;
-  opponent = {y: H/2, vy: 0, score: 0, alive: true, trail: []};
-  opponentAlive = true;
-  init();
-  state='play';
-  document.getElementById('ui').textContent='';
+  mpMode=true;
+  opponent={y:H/2,vy:0,score:0,alive:true,trail:[]};
+  opponentAlive=true;
+  if(uploadedBird) imgBird.src=uploadedBird;
+  if(uploadedPipe) imgPipe.src=uploadedPipe;
+  updateOpponentInfo();
 }
 
 function showMPResultScreen(){
@@ -862,11 +899,6 @@ function drawOpponent(){
 
 // MP Screen Buttons
 document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('mpBtn').addEventListener('click', ()=>{
-    document.getElementById('uploadScreen').style.display='none';
-    document.getElementById('profileScreen').style.display='flex';
-    document.getElementById('mpToggleBtn').style.display='none';
-  });
   document.getElementById('createBtn').addEventListener('click', ()=>{
     document.getElementById('mpStatus').textContent = '🔌 Verbinde...';
     document.getElementById('mpMenu').style.display='none';
@@ -882,7 +914,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.getElementById('mpStatus').textContent = '🔌 Verbinde...';
     connectWS(()=>{ ws.send(JSON.stringify({type:'join', code:code, name:myName, avatar:myAvatar})); });
   });
-  document.getElementById('mpBack').addEventListener('click', goToSingleplayer);
+  document.getElementById('mpBack').addEventListener('click', goToMenu);
   document.getElementById('mpBack2').addEventListener('click', ()=>{
     document.getElementById('mpJoinForm').style.display='none';
     document.getElementById('mpMenu').style.display='block';
@@ -896,9 +928,13 @@ function init(){
 }
 
 function jump(){
+  // Nicht springen wenn ein Overlay sichtbar ist
+  const mpVisible = document.getElementById('mpScreen').style.display !== 'none';
+  const customVisible = document.getElementById('customizeScreen').style.display !== 'none';
+  const startVisible = document.getElementById('startScreen').style.display !== 'none';
+  if(mpVisible || customVisible || startVisible) return;
   if(state==='idle'){init();state='play';document.getElementById('ui').textContent='';}
   else if(state==='play'){ bird.vy=getJMP(); spawnJumpParticles(); }
-  // state==='dead': nur Klick auf Button erlaubt, nicht genereller jump
 }
 function restartGame(){
   if(state==='dead'){
@@ -920,7 +956,9 @@ C.addEventListener('click', function(e){
   if(state==='dead'){
     if(mx>W/2-70&&mx<W/2+70&&my>H/2+48&&my<H/2+80) restartGame();
   } else if(state==='ready'){
-    state='play'; bird.vy=getJMP(); spawnJumpParticles();
+    bird.y = H/2 + Math.sin(frame*0.05)*8;
+    ctx.fillStyle='rgba(0,0,30,0.35)';ctx.fillRect(0,0,W,H);
+    txt('Leertaste oder Tippen!',W/2,H/2+80,18,'#ffd700','#000');
   } else {
     jump();
   }
@@ -934,7 +972,9 @@ C.addEventListener('touchstart',e=>{
   if(state==='dead'){
     if(mx>W/2-70&&mx<W/2+70&&my>H/2+48&&my<H/2+80) restartGame();
   } else if(state==='ready'){
-    state='play'; bird.vy=getJMP(); spawnJumpParticles();
+    bird.y = H/2 + Math.sin(frame*0.05)*8;
+    ctx.fillStyle='rgba(0,0,30,0.35)';ctx.fillRect(0,0,W,H);
+    txt('Leertaste oder Tippen!',W/2,H/2+80,18,'#ffd700','#000');
   } else {
     jump();
   }
@@ -1291,17 +1331,7 @@ function loop(){
   }
 
   if(state==='idle'){
-    ctx.fillStyle='rgba(0,0,30,0.42)';ctx.fillRect(0,0,W,H);
-    txt('Flappy Face! 😄',W/2,H/2-60,32,'#fff','#000');
-    ctx.save();
-    ctx.beginPath();ctx.arc(W/2,H/2-8,38,0,Math.PI*2);ctx.clip();
-    ctx.drawImage(imgBird,W/2-38,H/2-46,76,76);
-    ctx.restore();
-    ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=3;
-    ctx.beginPath();ctx.arc(W/2,H/2-8,38,0,Math.PI*2);ctx.stroke();
-    ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillStyle='#ccf';
-    ctx.fillText('🐋 Wale  🦄 Einhörner  🌈 Regenbögen',W/2,H/2+52);
-    ctx.fillStyle='#ffd700';ctx.fillText('▶  Klicken zum Starten',W/2,H/2+80);
+    // Startscreen wird als HTML gezeigt
   }
 
   if(state==='ready'){
@@ -1342,11 +1372,11 @@ function loop(){
 init();loop();
 
 // Upload Screen Buttons
-document.getElementById('easyBtn').addEventListener('click', toggleEasyMode);
-document.getElementById('mpToggleBtn').addEventListener('click', goToMultiplayer);
+
+
 document.getElementById('mpWeiterBtn').addEventListener('click', restartGame);
-document.getElementById('startBtn').addEventListener('click', startGame);
-document.getElementById('skipBtn').addEventListener('click', skipUpload);
+
+
 </script>
 </body>
 </html>
